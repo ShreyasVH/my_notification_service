@@ -1,0 +1,1 @@
+web: activator -jvm-debug "8058" "~run 9058"
