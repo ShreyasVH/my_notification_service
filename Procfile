@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/mynotificationservice -Dhttp.port=${PORT} -jvm-debug "8021"
+web: target/universal/stage/bin/my_notification_service -Dhttp.port=${PORT} -jvm-debug "8058"
