@@ -19,10 +19,32 @@ public class IndexService
         String host = System.getenv("SMTP_SERVER_HOST");
         String port = System.getenv("SMTP_SERVER_PORT");
 
+
         Properties properties = System.getProperties();
         properties.setProperty("mail.smtp.host", host);
         properties.setProperty("mail.smtp.port", port);
-        Session session = Session.getDefaultInstance(properties);
+
+        Session session;
+        boolean isAuthRequired = Boolean.parseBoolean(System.getenv("SMTP_AUTH_REQUIRED"));
+        if(isAuthRequired)
+        {
+            properties.put("mail.smtp.auth", "true");
+
+            Authenticator auth = new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    String user = System.getenv("SMTP_USER");
+                    String password = System.getenv("SMTP_PASSWORD");
+                    return new PasswordAuthentication(user, password);
+                }
+            };
+            session = Session.getDefaultInstance(properties, auth);
+        }
+        else
+        {
+            session = Session.getDefaultInstance(properties);
+        }
+
         try
         {
             MimeMessage message = new MimeMessage(session);
