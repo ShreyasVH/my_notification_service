@@ -1,5 +1,6 @@
 package controllers;
 
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import play.libs.Json;
 import play.mvc.Http;
@@ -15,15 +16,20 @@ import java.util.concurrent.CompletionStage;
 
 public class IndexController extends BaseController
 {
+	private HttpExecutionContext httpExecutionContext;
+
 	private final IndexService indexService;
 	
 	@Inject
 	public IndexController
 	(
-		IndexService indexService
+		IndexService indexService,
+		HttpExecutionContext executionContext
 	)
 	{
 		this.indexService = indexService;
+
+		this.httpExecutionContext = executionContext;
 	}
 
 	public Result index()
@@ -31,7 +37,7 @@ public class IndexController extends BaseController
         return ok("INDEX");
     }
 
-	public Result post(Http.Request request)
+	public CompletionStage<Result> post(Http.Request request)
 	{
 		MailRequest mailRequest;
 
@@ -44,9 +50,10 @@ public class IndexController extends BaseController
 			throw new RuntimeException(ex.getMessage());
 		}
 
-		boolean isSuccess = this.indexService.sendMail(mailRequest);
-		Map<String, Boolean> resultMap = new HashMap<>();
-		resultMap.put("success", isSuccess);
-		return ok(Json.toJson(resultMap));
+		return this.indexService.sendMail(mailRequest, this.httpExecutionContext).thenApplyAsync(isSuccess -> {
+			Map<String, Boolean> resultMap = new HashMap<>();
+			resultMap.put("success", isSuccess);
+			return ok(Json.toJson(resultMap));
+		}, this.httpExecutionContext.current());
 	}
 }

@@ -1,3 +1,3 @@
 GET	/			controllers.IndexController.index()
 
-POST	/api			controllers.IndexController.post(request : Request)
+POST	/api			@controllers.IndexController.post(request : Request)
